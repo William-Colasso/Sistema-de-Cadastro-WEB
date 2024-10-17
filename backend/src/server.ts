@@ -3,7 +3,8 @@ import { PrismaClient } from "@prisma/client";
 
 const app = express();
 const prisma = new PrismaClient();
-app.use(express.json())
+app.use(express.json());
+
 app.get("/clientes", async (req: Request, res: Response) => {
   var clientes: object[] = [];
   try {
@@ -40,30 +41,67 @@ app.get("/clientes/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.post('/clientes', async(req:Request, res:Response)=>{
-    try{
-        const { nome, cpf, dataNascimento, telefone, email } = req.body;
-     const novoCliente = await prisma.cliente.create({
-            data:{
-                nome,
-                cpf,
-                dataNascimento: new Date(dataNascimento), // Certifique-se de que a data está no formato correto
-                telefone,
-                email, 
-            }
-        })
+app.post("/clientes", async (req: Request, res: Response) => {
+  try {
+    const { nome, cpf, dataNascimento, telefone, email } = req.body;
+    const novoCliente = await prisma.cliente.create({
+      data: {
+        nome,
+        cpf,
+        dataNascimento: new Date(dataNascimento), // Certifique-se de que a data está no formato correto
+        telefone,
+        email,
+      },
+    });
 
-        
-            res.status(201).json(novoCliente)
-        
-    }catch(erro){
-        
-        res.status(500).json({message:'Erro ao cadastrar cliente:'+erro })
+    res.status(201).json(novoCliente);
+  } catch (erro) {
+    res.status(500).json({ message: "Erro ao cadastrar cliente:" + erro });
+  }
+});
+
+app.put("/clientes", async (req: Request, res: Response) => {
+  const { id, nome, cpf, dataNascimento, telefone, email } = req.body;
+  try {
+    var cliente = await prisma.cliente.update({
+      where: {
+        id: id, // Corrigido o uso da vírgula
+      },
+      data: {
+        // Aqui você deve especificar os campos que quer atualizar, por exemplo:
+        nome: nome, // Atualiza o nome do cliente
+        cpf: cpf,
+        dataNascimento: dataNascimento,
+        telefone: telefone,
+        email: email,
+      },
+    });
+    if (cliente) {
+      res.status(200).json(cliente);
+    } else {
+      res.status(400).json({ message: "Não foi possível atualizar o cliente" });
     }
-})
+  } catch (erro) {
+    res.status(500).json({ menssage: "Erro ao atualizar cliente" + erro });
+  }
+});
 
-
-
+app.delete("/clientes", async (req: Request, res: Response) => {
+  const id = req.body.id;
+  try {
+    if (id) {
+      await prisma.cliente.delete({
+        where: { id: id },
+      });
+      res.status(200).json({ message: "Cliente deletado" });
+    } else {
+      res.status(400).json({ message: "Erro ao deletar o  cliente" });
+      
+    }
+  } catch (erro) {
+    res.status(500).json({ message: "Erro ao entrar em clientes" + erro });
+  }
+});
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor está rodando na porta 3000");

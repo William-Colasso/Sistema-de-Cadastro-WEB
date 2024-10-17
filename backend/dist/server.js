@@ -43,7 +43,7 @@ app.get("/clientes/:id", async (req, res) => {
         res.status(500).json({ message: "Erro ao buscar cliente" }); // Retorna erro 500 em caso de falha
     }
 });
-app.post('/clientes', async (req, res) => {
+app.post("/clientes", async (req, res) => {
     try {
         const { nome, cpf, dataNascimento, telefone, email } = req.body;
         const novoCliente = await prisma.cliente.create({
@@ -53,12 +53,56 @@ app.post('/clientes', async (req, res) => {
                 dataNascimento: new Date(dataNascimento), // Certifique-se de que a data está no formato correto
                 telefone,
                 email,
-            }
+            },
         });
         res.status(201).json(novoCliente);
     }
     catch (erro) {
-        res.status(500).json({ message: 'Erro ao cadastrar cliente:' + erro });
+        res.status(500).json({ message: "Erro ao cadastrar cliente:" + erro });
+    }
+});
+app.put("/clientes", async (req, res) => {
+    const { id, nome, cpf, dataNascimento, telefone, email } = req.body;
+    try {
+        var cliente = await prisma.cliente.update({
+            where: {
+                id: id, // Corrigido o uso da vírgula
+            },
+            data: {
+                // Aqui você deve especificar os campos que quer atualizar, por exemplo:
+                nome: nome, // Atualiza o nome do cliente
+                cpf: cpf,
+                dataNascimento: dataNascimento,
+                telefone: telefone,
+                email: email,
+            },
+        });
+        if (cliente) {
+            res.status(200).json(cliente);
+        }
+        else {
+            res.status(400).json({ message: "Não foi possível atualizar o cliente" });
+        }
+    }
+    catch (erro) {
+        res.status(500).json({ menssage: "Erro ao atualizar cliente" + erro });
+    }
+});
+app.delete("/clientes", async (req, res) => {
+    const id = req.body.id;
+    try {
+        if (id) {
+            await prisma.cliente.delete({
+                where: { id: id },
+            });
+            res.status(200).json({ message: "Cliente deletado" });
+        }
+        else {
+            res.status(400).json({ message: "Erro ao deletar o  cliente" });
+        }
+    }
+    catch (erro) {
+        res.status(500).json({ message: "Erro ao entrar em clientes" + erro });
     }
 });
 app.listen(3000, "0.0.0.0", () => {
