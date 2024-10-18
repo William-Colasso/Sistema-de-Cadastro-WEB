@@ -1,9 +1,24 @@
-import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import express, { Request, Response } from "express";   //Importando express com TypeScript
+import { PrismaClient } from "@prisma/client";          //Importando prisma com TypeScript
+import cors from 'cors'
+const app = express();  //Instanciando o app
+const prisma = new PrismaClient();  //Instanciando o prisma
+app.use(express.json());  //Definindo o uso do json
 
-const app = express();
-const prisma = new PrismaClient();
-app.use(express.json());
+let permitidos =['http://127.0.0.1', 'http://localhost']
+
+const CORSCONFIG: object = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || permitidos.includes(origin)) {
+      callback(null, true); // Origem permitida
+    } else {
+      callback(new Error('Origin not allowed by CORS')); // Origem não permitida
+    }
+  }
+}
+
+
+app.use(cors(CORSCONFIG));
 
 app.get("/clientes", async (req: Request, res: Response) => {
   var clientes: object[] = [];

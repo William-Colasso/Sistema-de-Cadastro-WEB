@@ -3,11 +3,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const client_1 = require("@prisma/client");
-const app = (0, express_1.default)();
-const prisma = new client_1.PrismaClient();
-app.use(express_1.default.json());
+const express_1 = __importDefault(require("express")); //Importando express com TypeScript
+const client_1 = require("@prisma/client"); //Importando prisma com TypeScript
+const cors_1 = __importDefault(require("cors"));
+const app = (0, express_1.default)(); //Instanciando o app
+const prisma = new client_1.PrismaClient(); //Instanciando o prisma
+app.use(express_1.default.json()); //Definindo o uso do json
+let permitidos = ['http://127.0.0.1', 'http://localhost'];
+const CORSCONFIG = {
+    origin: (origin, callback) => {
+        if (!origin || permitidos.includes(origin)) {
+            callback(null, true); // Origem permitida
+        }
+        else {
+            callback(new Error('Origin not allowed by CORS')); // Origem não permitida
+        }
+    }
+};
+app.use((0, cors_1.default)(CORSCONFIG));
 app.get("/clientes", async (req, res) => {
     var clientes = [];
     try {
